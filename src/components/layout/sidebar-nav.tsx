@@ -47,7 +47,7 @@ export function SidebarNav({ className, ...props }: SidebarNavProps) {
               className={cn(
                  pathname === item.href 
                   ? 'bg-primary/10 text-primary hover:bg-primary/20' 
-                  : 'hover:bg-muted/50 text-sidebar-foreground',
+                  : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground',
                  'justify-start'
               )}
             >

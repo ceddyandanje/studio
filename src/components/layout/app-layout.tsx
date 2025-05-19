@@ -1,7 +1,7 @@
 
 import { MainHeader } from '@/components/layout/main-header';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarInset, SidebarRail } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
@@ -11,6 +11,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen>
       <Sidebar collapsible="icon" variant="sidebar" className="bg-sidebar text-sidebar-foreground">
+        <SidebarRail />
         <SidebarHeader className="p-2">
           <Link href="/" className="flex items-center gap-2 font-semibold text-primary px-2 py-3.5">
             <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="text-primary">

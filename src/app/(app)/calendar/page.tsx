@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { CalendarEvent } from '@/types';
 import { mockEvents } from '@/lib/mock-data';
 import { EventCard } from '@/components/calendar/event-card';
@@ -32,12 +33,14 @@ export default function CalendarPage() {
     });
   };
   
-  const eventsForSelectedDate = events
-    .filter(event => 
-      selectedDate && 
-      format(new Date(event.startTime), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
-    )
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  const eventsForSelectedDate = useMemo(() => {
+    return events
+      .filter(event => 
+        selectedDate && 
+        format(new Date(event.startTime), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+      )
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [events, selectedDate]);
 
   return (
     <div className="flex-1 space-y-6">
@@ -54,8 +57,8 @@ export default function CalendarPage() {
         </QuickAddDialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1 shadow-md">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1 shadow-md">
           <CardContent className="p-2 sm:p-4">
             <Calendar
               mode="single"
@@ -69,7 +72,7 @@ export default function CalendarPage() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2 shadow-md">
+        <Card className="lg:col-span-2 shadow-md">
           <CardHeader>
             <CardTitle>
               Events for {selectedDate ? format(selectedDate, 'PPP') : 'selected date'}
