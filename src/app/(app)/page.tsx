@@ -4,7 +4,7 @@ import { TaskPrioritization } from '@/components/dashboard/task-prioritization';
 import { Bar, BarChart, CartesianGrid, Legend, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ChartConfig } from '@/components/ui/chart';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart'; // ChartTooltip, ChartLegend can also be used from here if needed
+import { ChartContainer, ChartTooltipContent, ChartTooltip } from '@/components/ui/chart'; // ChartTooltip, ChartLegend can also be used from here if needed
 
 const productivityData = [
   { day: "Mon", tasksCompleted: 4, eventsScheduled: 2 },
