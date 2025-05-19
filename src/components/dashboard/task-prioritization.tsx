@@ -55,7 +55,7 @@ export function TaskPrioritization() {
             <Info className="mx-auto h-10 w-10 text-primary" />
             <h3 className="text-lg font-semibold">No Active Tasks!</h3>
             <p className="text-sm text-muted-foreground">
-              Looks like you're all caught up or new to ChronoFlow.
+              Looks like you're all caught up or new to Antikythera Scheduler.
             </p>
             <p className="text-sm text-muted-foreground">
               Add tasks via the "Quick Add" button in the header or on the <Link href="/tasks" className="text-primary underline hover:text-primary/80">Tasks page</Link>.
@@ -81,3 +81,4 @@ export function TaskPrioritization() {
     </Card>
   );
 }
+
