@@ -57,7 +57,7 @@ export default function SettingsPage() {
       <Card className="shadow-md">
         <CardHeader>
           <CardTitle>Appearance</CardTitle>
-          <CardDescription>Customize the look and feel of ChronoFlow.</CardDescription>
+          <CardDescription>Customize the look and feel of Antikythera Scheduler.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">

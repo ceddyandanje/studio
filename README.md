@@ -1,2 +1,2 @@
-Appointment scheduler app
+Antikythera Scheduler app
 based on gemini and gemini API

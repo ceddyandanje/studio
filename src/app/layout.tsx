@@ -8,8 +8,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'ChronoFlow',
-  description: 'Manage your calendar and tasks efficiently with ChronoFlow.',
+  title: 'Antikythera Scheduler',
+  description: 'Manage your calendar and tasks efficiently with Antikythera Scheduler.',
 };
 
 export default function RootLayout({

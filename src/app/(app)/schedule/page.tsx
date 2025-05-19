@@ -11,7 +11,7 @@ export default function AISchedulerPage() {
         </h2>
       </div>
       <p className="text-muted-foreground">
-        Let ChronoFlow's AI analyze your calendar and productivity patterns to suggest the best times for your new tasks.
+        Let Antikythera Scheduler's AI analyze your calendar and productivity patterns to suggest the best times for your new tasks.
         Fill in the details below to get started.
       </p>
       <AISchedulerForm />

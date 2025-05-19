@@ -18,7 +18,7 @@ export function MainHeader() {
             <path fill="currentColor" d="M50 10C27.9 10 10 27.9 10 50s17.9 40 40 40 40-17.9 40-40S72.1 10 50 10zm0 72c-17.7 0-32-14.3-32-32S32.3 18 50 18s32 14.3 32 32-14.3 32-32 32z"/>
             <path fill="currentColor" d="M53 25h-6v25l21.6 12.9 3-4.9-18.6-11V25z"/>
            </svg>
-           <h1 className="text-xl font-semibold">ChronoFlow</h1>
+           <h1 className="text-xl font-semibold">Antikythera Scheduler</h1>
          </Link>
       </div>
 
