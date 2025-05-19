@@ -1,12 +1,11 @@
 import type {Metadata} from 'next';
-import { Inter } from 'next/font/google' // Using Inter as a fallback, Geist is preferred
+import { Inter } from 'next/font/google'
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
+import { ThemeProvider } from '@/components/theme-provider';
 
-// Using Inter font as specified in the original template, can be replaced by Geist if preferred.
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-
 
 export const metadata: Metadata = {
   title: 'ChronoFlow',
@@ -21,8 +20,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

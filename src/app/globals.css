@@ -9,7 +9,7 @@ body {
 @layer base {
   :root {
     --background: 208 100% 97%; /* Very light blue (#F0F8FF) */
-    --foreground: 210 20% 25%; /* Dark grayish blue for text, ensuring contrast */
+    --foreground: 210 20% 25%; /* Dark grayish blue for text */
     --card: 0 0% 100%; /* White */
     --card-foreground: 210 20% 25%;
     --popover: 0 0% 100%;
@@ -20,8 +20,8 @@ body {
     --secondary-foreground: 207 68% 30%; /* Darker blue for text on secondary */
     --muted: 207 50% 93%; /* Very light muted blue */
     --muted-foreground: 207 40% 55%; /* Muted blue text */
-    --accent: 145 63% 49%; /* Emerald green (#2ECC71) */
-    --accent-foreground: 0 0% 100%; /* White */
+    --accent: 180 50% 60%; /* Lighter Teal/Cyan */
+    --accent-foreground: 180 60% 25%; /* Darker Teal/Cyan for text on accent */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 207 50% 85%; /* Slightly darker blue for borders */
@@ -35,36 +35,36 @@ body {
     --radius: 0.5rem;
 
     /* Sidebar specific theme */
-    --sidebar-background: 207 60% 92%; /* Slightly different light blue for sidebar */
-    --sidebar-foreground: 207 68% 25%; /* Dark blue text for sidebar */
-    --sidebar-primary: 207 68% 53%; /* Deep sky blue */
-    --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 207 50% 80%; /* Lighter accent for sidebar hover */
-    --sidebar-accent-foreground: 207 68% 20%; /* Darker blue for text on sidebar accent */
-    --sidebar-border: 207 50% 78%; /* Border for sidebar elements */
-    --sidebar-ring: 207 68% 53%; /* Primary color for focus rings in sidebar */
+    --sidebar-background: 207 60% 92%; 
+    --sidebar-foreground: 207 68% 25%; 
+    --sidebar-primary: 207 68% 53%; 
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 207 50% 80%; 
+    --sidebar-accent-foreground: 207 68% 20%;
+    --sidebar-border: 207 50% 78%; 
+    --sidebar-ring: 207 68% 53%; 
   }
 
   .dark {
-    --background: 210 30% 10%; /* Very dark blue */
-    --foreground: 208 100% 92%; /* Very light blue (almost white) */
-    --card: 210 30% 15%; /* Slightly lighter dark blue for cards */
+    --background: 210 30% 10%; /* Very dark desaturated blue */
+    --foreground: 208 100% 92%; /* Very light, almost white, cool blue */
+    --card: 210 30% 15%; /* Dark desaturated blue, slightly lighter than background */
     --card-foreground: 208 100% 92%;
     --popover: 210 30% 15%;
     --popover-foreground: 208 100% 92%;
     --primary: 207 68% 53%; /* Deep sky blue (kept vibrant) */
     --primary-foreground: 210 30% 10%; /* Dark blue text on primary */
-    --secondary: 210 30% 20%; /* Darker secondary blue */
+    --secondary: 210 30% 20%; /* Darker desaturated blue */
     --secondary-foreground: 208 100% 92%;
-    --muted: 210 30% 22%; /* Dark muted blue */
-    --muted-foreground: 208 80% 80%; /* Lighter muted text */
-    --accent: 145 63% 49%; /* Emerald green (kept vibrant) */
-    --accent-foreground: 210 30% 10%; /* Dark text on accent */
-    --destructive: 0 62.8% 30.6%;
+    --muted: 210 30% 22%; /* Dark muted blue (for hovers, slightly lighter than card/bg) */
+    --muted-foreground: 208 80% 80%; /* Lighter muted blue text */
+    --accent: 180 60% 45%; /* Teal/Cyan */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+    --destructive: 0 70% 55%; /* Adjusted red for dark mode */
     --destructive-foreground: 0 0% 98%;
     --border: 210 30% 25%; /* Darker border */
     --input: 210 30% 23%; /* Darker input background */
-    --ring: 207 68% 53%; /* Primary color for focus rings */
+    --ring: 207 68% 53%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -72,14 +72,14 @@ body {
     --chart-5: 340 75% 55%;
 
     /* Dark Sidebar specific theme */
-    --sidebar-background: 210 30% 12%; /* Slightly different dark blue for sidebar */
-    --sidebar-foreground: 208 90% 90%; /* Light text for sidebar */
-    --sidebar-primary: 207 68% 53%; /* Deep sky blue */
-    --sidebar-primary-foreground: 210 30% 10%; /* Dark blue text on sidebar primary */
-    --sidebar-accent: 210 30% 22%; /* Darker accent for sidebar hover */
-    --sidebar-accent-foreground: 208 90% 90%; /* Light text on sidebar accent */
-    --sidebar-border: 210 30% 25%; /* Border for sidebar elements */
-    --sidebar-ring: 207 68% 53%; /* Primary color for focus rings in sidebar */
+    --sidebar-background: 210 30% 12%; 
+    --sidebar-foreground: 208 90% 90%; 
+    --sidebar-primary: 207 68% 53%; 
+    --sidebar-primary-foreground: 210 30% 10%; 
+    --sidebar-accent: 210 30% 22%; 
+    --sidebar-accent-foreground: 208 90% 90%; 
+    --sidebar-border: 210 30% 25%; 
+    --sidebar-ring: 207 68% 53%; 
   }
 }
 
