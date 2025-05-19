@@ -1,26 +1,28 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EventTimeline } from '@/components/dashboard/event-timeline';
 import { TaskPrioritization } from '@/components/dashboard/task-prioritization';
-import { Bar, BarChart, CartesianGrid, Legend, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis, Bar } from 'recharts'; // Added Bar
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ChartConfig } from '@/components/ui/chart';
-import { ChartContainer, ChartTooltipContent, ChartTooltip } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent, ChartTooltip } from '@/components/ui/chart'; // Added ChartTooltip
 import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, Eye, EyeOff } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { getMockTasks, getMockEvents, subscribeToMockDataChanges } from '@/lib/mock-data'; // Import data functions
+import type { Task, CalendarEvent } from '@/types';
 
-const productivityData = [
-  { day: "Mon", tasksCompleted: 4, eventsScheduled: 2, focusHours: 5 },
-  { day: "Tue", tasksCompleted: 3, eventsScheduled: 3, focusHours: 4.5 },
-  { day: "Wed", tasksCompleted: 5, eventsScheduled: 1, focusHours: 6 },
-  { day: "Thu", tasksCompleted: 4, eventsScheduled: 4, focusHours: 5 },
-  { day: "Fri", tasksCompleted: 6, eventsScheduled: 2, focusHours: 7 },
-  { day: "Sat", tasksCompleted: 2, eventsScheduled: 5, focusHours: 3 },
-  { day: "Sun", tasksCompleted: 1, eventsScheduled: 1, focusHours: 2 },
+const initialProductivityData = [
+  { day: "Mon", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
+  { day: "Tue", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
+  { day: "Wed", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
+  { day: "Thu", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
+  { day: "Fri", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
+  { day: "Sat", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
+  { day: "Sun", tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 },
 ];
 
 const chartConfig = {
@@ -33,7 +35,7 @@ const chartConfig = {
     color: "hsl(var(--chart-2))",
   },
   focusHours: {
-    label: "Focus Hours",
+    label: "Focus Hours (Est.)", // Assuming focus hours might be estimated or manually input in a future feature
     color: "hsl(var(--chart-3))",
   }
 } satisfies ChartConfig;
@@ -50,6 +52,75 @@ export default function DashboardPage() {
     showTaskPrioritization: true,
     showProductivityInsights: true,
   });
+
+  // State for tasks and events to make dashboard reactive, though TaskPrioritization and EventTimeline fetch their own
+  const [, setTasks] = useState<Task[]>(getMockTasks());
+  const [, setEvents] = useState<CalendarEvent[]>(getMockEvents());
+  const [productivityData, setProductivityData] = useState(initialProductivityData);
+
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMockDataChanges(() => {
+      const currentTasks = getMockTasks();
+      const currentEvents = getMockEvents();
+      setTasks(currentTasks);
+      setEvents(currentEvents);
+
+      // Simple aggregation for productivity chart (example)
+      // In a real app, this would be more sophisticated, perhaps based on event types or task properties
+      const newProductivityData = [...initialProductivityData].map(dayData => ({ ...dayData })); // Deep copy
+      currentTasks.forEach(task => {
+        if (task.completed && task.dueDate) {
+          const dayIndex = new Date(task.dueDate).getDay(); // 0 (Sun) - 6 (Sat)
+          const adjustedDayIndex = (dayIndex === 0) ? 6 : dayIndex - 1; // Mon (0) - Sun (6)
+          if (newProductivityData[adjustedDayIndex]) {
+            newProductivityData[adjustedDayIndex].tasksCompleted += 1;
+            // Example: Add 1 focus hour for each completed task (very simplistic)
+            newProductivityData[adjustedDayIndex].focusHours += 1; 
+          }
+        }
+      });
+      currentEvents.forEach(event => {
+        const dayIndex = new Date(event.startTime).getDay();
+        const adjustedDayIndex = (dayIndex === 0) ? 6 : dayIndex - 1;
+         if (newProductivityData[adjustedDayIndex]) {
+            newProductivityData[adjustedDayIndex].eventsScheduled += 1;
+        }
+      });
+      setProductivityData(newProductivityData);
+    });
+    // Initial data load for productivity chart
+    unsubscribe(); // Call once to load initial data
+    const unsubRetry = subscribeToMockDataChanges(() => { // Resubscribe
+        const currentTasks = getMockTasks();
+        const currentEvents = getMockEvents();
+        setTasks(currentTasks);
+        setEvents(currentEvents);
+        const newProductivityData = [...initialProductivityData].map(dayData => ({ ...dayData, tasksCompleted: 0, eventsScheduled: 0, focusHours: 0 }));
+        currentTasks.forEach(task => {
+            if (task.completed && task.dueDate) {
+                const dayIndex = new Date(task.dueDate).getDay();
+                const adjustedDayIndex = (dayIndex === 0) ? 6 : dayIndex - 1;
+                if (newProductivityData[adjustedDayIndex]) {
+                    newProductivityData[adjustedDayIndex].tasksCompleted += 1;
+                    newProductivityData[adjustedDayIndex].focusHours += 1;
+                }
+            }
+        });
+        currentEvents.forEach(event => {
+            const dayIndex = new Date(event.startTime).getDay();
+            const adjustedDayIndex = (dayIndex === 0) ? 6 : dayIndex - 1;
+            if (newProductivityData[adjustedDayIndex]) {
+                newProductivityData[adjustedDayIndex].eventsScheduled += 1;
+            }
+        });
+        setProductivityData(newProductivityData);
+    });
+
+
+    return () => unsubRetry();
+  }, []);
+
 
   const handleWidgetToggle = (widgetKey: keyof DashboardWidgetsVisibility) => {
     setWidgetsVisibility(prev => ({ ...prev, [widgetKey]: !prev[widgetKey] }));
@@ -130,7 +201,7 @@ export default function DashboardPage() {
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle>Productivity Insights</CardTitle>
-            <CardDescription>Your task, event, and focus activity for the week.</CardDescription>
+            <CardDescription>Your task, event, and estimated focus activity for the week.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -174,19 +245,19 @@ export default function DashboardPage() {
                     dataKey="tasksCompleted" 
                     fill="var(--color-tasksCompleted)" 
                     radius={[4, 4, 0, 0]}
-                    activeBar={<Rectangle fillOpacity={0.7} />}
+                    // activeBar={<Rectangle fillOpacity={0.7} />} // activeBar is a recharts prop, not Shadcn
                   />
                   <Bar 
                     dataKey="eventsScheduled" 
                     fill="var(--color-eventsScheduled)" 
                     radius={[4, 4, 0, 0]} 
-                    activeBar={<Rectangle fillOpacity={0.7} />}
+                    // activeBar={<Rectangle fillOpacity={0.7} />}
                   />
                    <Bar 
                     dataKey="focusHours" 
                     fill="var(--color-focusHours)" 
                     radius={[4, 4, 0, 0]} 
-                    activeBar={<Rectangle fillOpacity={0.7} />}
+                    // activeBar={<Rectangle fillOpacity={0.7} />}
                   />
                 </BarChart>
               </ResponsiveContainer>

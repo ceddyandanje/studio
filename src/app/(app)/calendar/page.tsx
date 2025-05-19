@@ -3,32 +3,35 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { CalendarEvent } from '@/types';
-import { mockEvents } from '@/lib/mock-data';
+import { getMockEvents, deleteMockEvent, subscribeToMockDataChanges } from '@/lib/mock-data';
 import { EventCard } from '@/components/calendar/event-card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, PlusCircle } from 'lucide-react';
 import { QuickAddDialog } from '@/components/shared/quick-add-dialog';
-import { Calendar } from '@/components/ui/calendar'; // ShadCN Calendar for date picking/display
+import { Calendar } from '@/components/ui/calendar'; 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CalendarPage() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>(getMockEvents());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate fetching events
-    setEvents(mockEvents);
+    const unsubscribe = subscribeToMockDataChanges(() => {
+      setEvents(getMockEvents());
+    });
+    return () => unsubscribe(); 
   }, []);
 
   const handleDeleteEvent = (eventId: string) => {
-    setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+    const eventToDelete = events.find(e => e.id === eventId);
+    deleteMockEvent(eventId);
     toast({
       title: "Event Deleted",
-      description: `Event "${events.find(e => e.id === eventId)?.title}" has been removed.`,
+      description: `Event "${eventToDelete?.title}" has been removed.`,
       variant: "destructive"
     });
   };
@@ -49,7 +52,7 @@ export default function CalendarPage() {
           <CalendarDays className="mr-3 h-8 w-8 text-primary" />
           My Calendar
         </h2>
-        <QuickAddDialog>
+        <QuickAddDialog defaultType="event">
           <Button>
             <PlusCircle className="mr-2 h-5 w-5" />
             Add New Event
@@ -65,7 +68,6 @@ export default function CalendarPage() {
               selected={selectedDate}
               onSelect={setSelectedDate}
               className="rounded-md border w-full"
-              // Modifiers can be used to highlight days with events
               modifiers={{ events: events.map(e => new Date(e.startTime)) }}
               modifiersClassNames={{ events: 'bg-primary/20 rounded-full' }}
             />
@@ -83,8 +85,11 @@ export default function CalendarPage() {
               <div className="text-center py-10">
                 <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />
                 <p className="mt-4 text-lg text-muted-foreground">
-                  No events scheduled for this day.
+                  {events.length === 0 && !selectedDate ? "Your calendar is empty." : "No events scheduled for this day."}
                 </p>
+                {events.length === 0 && !selectedDate && (
+                   <p className="text-sm text-muted-foreground">Try adding a new event using the button above!</p>
+                )}
               </div>
             ) : (
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
@@ -93,7 +98,6 @@ export default function CalendarPage() {
                     key={event.id} 
                     event={event} 
                     onDelete={handleDeleteEvent}
-                    // onEdit could open a dialog
                   />
                 ))}
               </div>

@@ -1,5 +1,7 @@
+
 "use client";
 
+import * as React from 'react'; // Added React import
 import { useState, type ReactNode } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -42,10 +44,13 @@ import { CalendarIcon, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import type { Priority } from '@/types';
+import { addMockTask, addMockEvent } from '@/lib/mock-data'; // Import new functions
+import { Textarea } from '../ui/textarea';
 
 const formSchema = z.object({
   type: z.enum(['event', 'task']),
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
+  description: z.string().optional(),
   startTime: z.date().optional(),
   endTime: z.date().optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
@@ -57,7 +62,7 @@ const formSchema = z.object({
   return true;
 }, {
   message: "Start and end time are required for events",
-  path: ["startTime"], // you can specify the path for the error message
+  path: ["startTime"], 
 }).refine(data => {
   if (data.type === 'event' && data.startTime && data.endTime && data.endTime < data.startTime) {
     return false;
@@ -72,30 +77,68 @@ type QuickAddFormValues = z.infer<typeof formSchema>;
 
 interface QuickAddDialogProps {
   children: ReactNode;
+  defaultType?: 'task' | 'event';
 }
 
-export function QuickAddDialog({ children }: QuickAddDialogProps) {
+export function QuickAddDialog({ children, defaultType = 'task' }: QuickAddDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<QuickAddFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: 'task',
+      type: defaultType,
       title: '',
+      description: '',
+      priority: 'medium',
     },
   });
+
+  // Reset form when dialog opens or type changes
+  React.useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        type: defaultType,
+        title: '',
+        description: '',
+        priority: 'medium',
+        startTime: undefined,
+        endTime: undefined,
+        dueDate: undefined,
+      });
+    }
+  }, [isOpen, defaultType, form]);
+
 
   const itemType = form.watch('type');
 
   function onSubmit(values: QuickAddFormValues) {
-    console.log('Quick Add Submitted:', values);
-    toast({
-      title: `${values.type === 'event' ? 'Event' : 'Task'} Added!`,
-      description: `"${values.title}" has been added.`,
-    });
+    if (values.type === 'task') {
+      addMockTask({
+        title: values.title,
+        description: values.description,
+        priority: values.priority as Priority, // Zod enum ensures this is valid
+        dueDate: values.dueDate,
+      });
+      toast({
+        title: 'Task Added!',
+        description: `"${values.title}" has been added to your tasks.`,
+      });
+    } else if (values.type === 'event') {
+      // startTime and endTime are guaranteed by refine
+      addMockEvent({
+        title: values.title,
+        description: values.description,
+        startTime: values.startTime!,
+        endTime: values.endTime!,
+      });
+      toast({
+        title: 'Event Added!',
+        description: `"${values.title}" has been added to your calendar.`,
+      });
+    }
     setIsOpen(false);
-    form.reset();
+    form.reset(); 
   }
 
   return (
@@ -109,17 +152,29 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
-                <FormItem className="space-y-3">
+                <FormItem className="space-y-2">
                   <FormLabel>Type</FormLabel>
                   <FormControl>
                     <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.reset({ // Reset other fields when type changes
+                          ...form.getValues(),
+                           type: value as 'task' | 'event',
+                           title: form.getValues('title'), // keep title
+                           description: form.getValues('description'), // keep description
+                           priority: 'medium',
+                           startTime: undefined,
+                           endTime: undefined,
+                           dueDate: undefined,
+                        });
+                      }}
+                      value={field.value}
                       className="flex space-x-4"
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">
@@ -154,6 +209,21 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Add more details..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
 
             {itemType === 'event' && (
               <>
@@ -189,16 +259,17 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
                             onSelect={field.onChange}
                             initialFocus
                           />
-                          {/* Basic time picker - could be improved with a dedicated time input */}
                           <div className="p-2 border-t">
-                            <Input type="time" defaultValue={field.value ? format(field.value, "HH:mm") : "09:00"} onChange={(e) => {
-                                if (field.value) {
-                                    const [hours, minutes] = e.target.value.split(':');
-                                    const newDate = new Date(field.value);
-                                    newDate.setHours(parseInt(hours), parseInt(minutes));
-                                    field.onChange(newDate);
-                                }
-                            }} />
+                            <Input 
+                              type="time" 
+                              defaultValue={field.value ? format(field.value, "HH:mm") : ""} 
+                              onChange={(e) => {
+                                const newDate = field.value ? new Date(field.value) : new Date();
+                                const [hours, minutes] = e.target.value.split(':');
+                                newDate.setHours(parseInt(hours), parseInt(minutes));
+                                field.onChange(newDate);
+                              }} 
+                            />
                           </div>
                         </PopoverContent>
                       </Popover>
@@ -239,14 +310,16 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
                             initialFocus
                           />
                            <div className="p-2 border-t">
-                            <Input type="time" defaultValue={field.value ? format(field.value, "HH:mm") : "10:00"} onChange={(e) => {
-                                if (field.value) {
-                                    const [hours, minutes] = e.target.value.split(':');
-                                    const newDate = new Date(field.value);
-                                    newDate.setHours(parseInt(hours), parseInt(minutes));
-                                    field.onChange(newDate);
-                                }
-                            }} />
+                            <Input 
+                              type="time" 
+                              defaultValue={field.value ? format(field.value, "HH:mm") : ""}
+                              onChange={(e) => {
+                                const newDate = field.value ? new Date(field.value) : new Date();
+                                const [hours, minutes] = e.target.value.split(':');
+                                newDate.setHours(parseInt(hours), parseInt(minutes));
+                                field.onChange(newDate);
+                              }}
+                            />
                           </div>
                         </PopoverContent>
                       </Popover>
@@ -265,7 +338,7 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue="medium">
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select priority" />
@@ -286,7 +359,7 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
                   name="dueDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Due Date</FormLabel>
+                      <FormLabel>Due Date (Optional)</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -311,7 +384,7 @@ export function QuickAddDialog({ children }: QuickAddDialogProps) {
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
-                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() -1))} // disable past dates
+                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() -1))} 
                             initialFocus
                           />
                         </PopoverContent>
