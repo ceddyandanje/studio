@@ -23,21 +23,21 @@ interface NavItemConfig {
   label: string;
   icon: LucideIcon;
   children?: NavChildItemConfig[];
-  basePath?: string;
+  basePath?: string; // Used to keep parent active when a child is active
 }
 
 interface NavChildItemConfig {
   href: string;
   label: string;
   icon?: LucideIcon;
-  statusQuery?: string;
+  statusQuery?: string; // For task status filtering
 }
 
 const navItemsConfig: NavItemConfig[] = [
   {
     label: 'Dashboard',
     icon: LayoutDashboard,
-    basePath: '/',
+    basePath: '/', // Matches both / and /overview
     children: [
       { href: '/', label: 'Main Dashboard', icon: LayoutDashboard },
       { href: '/overview', label: 'Upcoming View', icon: Activity },
@@ -64,17 +64,37 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
 
   const [openSubMenus, setOpenSubMenus] = React.useState<Record<string, boolean>>(() => {
     const initialStates: Record<string, boolean> = {};
-    let oneAlreadyOpen = false;
+    // Try to open the relevant submenu if a child route is active on initial load
     navItemsConfig.forEach(item => {
-      if (item.children) {
-        if (!oneAlreadyOpen && item.basePath && pathname.startsWith(item.basePath)) {
-          initialStates[item.label] = true;
-          oneAlreadyOpen = true;
+      if (item.children && item.basePath) {
+        if (pathname.startsWith(item.basePath)) {
+          // Check if this is the most specific basePath match or if any child is directly active
+          const isDirectChildActive = item.children.some(child => 
+             child.statusQuery 
+             ? pathname === child.href.split('?')[0] && searchParams.get('status') === child.statusQuery
+             : pathname === child.href && (item.label !== 'Tasks' || !searchParams.get('status'))
+          );
+          if (isDirectChildActive || pathname === item.basePath) { // Open if parent or direct child is active
+            initialStates[item.label] = true;
+          } else {
+             initialStates[item.label] = false;
+          }
         } else {
           initialStates[item.label] = false;
         }
       }
     });
+     // Ensure only one is open initially if multiple somehow match
+    let firstOpen = false;
+    for (const key in initialStates) {
+        if (initialStates[key]) {
+            if (firstOpen) {
+                initialStates[key] = false;
+            } else {
+                firstOpen = true;
+            }
+        }
+    }
     return initialStates;
   });
 
@@ -83,6 +103,7 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
       const isCurrentlyOpen = !!prevOpenSubMenus[label];
       const newStates: Record<string, boolean> = {};
 
+      // Close all other submenus, then toggle the clicked one
       navItemsConfig.forEach(configItem => {
         if (configItem.children) {
           if (configItem.label === label) {
@@ -108,17 +129,24 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
         {navItemsConfig.map((item) => {
           if (item.children) {
             const isOpen = openSubMenus[item.label] || false;
-            const isParentActive = item.basePath ? pathname.startsWith(item.basePath) : false;
+            // Parent is active if its basePath matches and no specific child is the *sole* reason for another menu being open,
+            // or if one of its children is active.
+            const isParentPathActive = item.basePath ? pathname.startsWith(item.basePath) : false;
+             const isAnyChildActive = item.children.some(child => 
+                child.statusQuery 
+                ? pathname === child.href.split('?')[0] && searchParams.get('status') === child.statusQuery
+                : pathname === child.href && (item.label !== 'Tasks' || !searchParams.get('status'))
+             );
 
             return (
               <React.Fragment key={item.label}>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    isActive={isParentActive && !item.children.some(c => c.href === pathname && (!c.statusQuery || c.statusQuery === searchParams.get('status')))}
+                    isActive={isParentPathActive && isOpen} // Parent button active if its section is open and path matches
                     tooltip={item.label}
                     onClick={() => toggleSubMenu(item.label)}
                     className={cn(
-                      (isParentActive && !isOpen && !item.children.some(c => c.href === pathname && (!c.statusQuery && !searchParams.get('status') || c.statusQuery === searchParams.get('status'))))
+                      (isParentPathActive && !isAnyChildActive && !isOpen) // Highlight if path matches but not expanded to show a child
                         ? 'bg-primary/10 text-primary hover:bg-primary/20'
                         : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground',
                       'justify-start'
@@ -132,14 +160,23 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
                     )} />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {isOpen && (
+                
+                <div className={cn(
+                  "overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out",
+                  "group-data-[collapsible=icon]:hidden", // Hide when sidebar is collapsed
+                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 invisible"
+                )}>
                   <SidebarMenuSub>
                     {item.children.map(child => {
                       let childIsActive = false;
                       if (child.statusQuery) {
                         childIsActive = pathname === child.href.split('?')[0] && searchParams.get('status') === child.statusQuery;
                       } else {
-                        childIsActive = pathname === child.href && (item.label !== 'Tasks' || !searchParams.get('status'));
+                        // For 'Dashboard' -> 'Main Dashboard', it's active if path is '/' and no query params indicating tasks view.
+                        // For 'Tasks' -> 'All Tasks', it's active if path is '/tasks' and no status query param.
+                        childIsActive = pathname === child.href && 
+                                        ((item.label === 'Tasks' && !searchParams.get('status')) || 
+                                         (item.label === 'Dashboard' && child.href === '/'));
                       }
 
                       return (
@@ -157,7 +194,7 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
                       );
                     })}
                   </SidebarMenuSub>
-                )}
+                </div>
               </React.Fragment>
             );
           } else {
@@ -188,3 +225,4 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
     </nav>
   );
 }
+
