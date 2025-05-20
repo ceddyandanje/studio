@@ -14,8 +14,8 @@ import { UpcomingWidgetCard } from '@/components/dashboard/upcoming-widget-card'
 import { cn } from '@/lib/utils';
 import type { Task, CalendarEvent } from '@/types';
 import { getMockTasks, getMockEvents, subscribeToMockDataChanges } from '@/lib/mock-data';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as ChartTooltip } from 'recharts';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { ChartContainer, ChartTooltipContent, ChartTooltip } from '@/components/ui/chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, subDays, startOfDay } from 'date-fns';
 import _ from 'lodash';
@@ -106,7 +106,7 @@ export default function DashboardPage() {
     tasks: { label: "Tasks Added", color: "hsl(var(--chart-1))" },
     events: { label: "Events Scheduled", color: "hsl(var(--chart-2))" },
     focusHours: { label: "Focus Hours", color: "hsl(var(--chart-3))" },
-  };
+  } as const;
 
 
   return (
@@ -186,8 +186,8 @@ export default function DashboardPage() {
               <CardDescription>Tasks added, events scheduled, and estimated focus hours.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2 pr-6 pb-6">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={productivityData}>
+              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <BarChart data={productivityData} accessibilityLayer>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                   <Bar dataKey="events" fill="var(--color-events)" radius={4} />
                   <Bar dataKey="focusHours" fill="var(--color-focusHours)" radius={4} />
                 </BarChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </CardContent>
           </Card>
         )}
