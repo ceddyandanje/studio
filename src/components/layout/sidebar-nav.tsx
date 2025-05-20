@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from "react"; // Corrected React import
+import React from "react";
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -10,34 +10,43 @@ import {
   ListChecks,
   CalendarDays,
   Sparkles,
-  Activity,
+  Activity, // Icon for Overview page (Upcoming View)
   ChevronDown,
-  ListTodo, // Icon for Pending Tasks
-  CheckCircle2, // Icon for Completed Tasks
+  ListTodo, 
+  CheckCircle2, 
 } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar';
 import type { LucideIcon } from 'lucide-react';
 
-interface NavItem {
-  href?: string; // Optional for parent items
+interface NavItemConfig {
+  href?: string; 
   label: string;
   icon: LucideIcon;
-  children?: NavChildItem[];
+  children?: NavChildItemConfig[];
+  basePath?: string; // For parent active state if href is not direct
 }
 
-interface NavChildItem {
+interface NavChildItemConfig {
   href: string;
   label: string;
-  icon?: LucideIcon; // Optional for sub-items, or use a default
-  statusQuery?: string; // e.g., "pending" or "completed" for tasks
+  icon?: LucideIcon; 
+  statusQuery?: string; 
 }
 
-const navItemsConfig: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/overview', label: 'Overview', icon: Activity },
+const navItemsConfig: NavItemConfig[] = [
+  {
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    basePath: '/', // To make parent active for both '/' and '/overview'
+    children: [
+      { href: '/', label: 'Main Dashboard', icon: LayoutDashboard },
+      { href: '/overview', label: 'Upcoming View', icon: Activity },
+    ],
+  },
   {
     label: 'Tasks',
     icon: ListChecks,
+    basePath: '/tasks',
     children: [
       { href: '/tasks', label: 'All Tasks', icon: ListChecks },
       { href: '/tasks?status=pending', label: 'Pending', icon: ListTodo, statusQuery: 'pending' },
@@ -52,7 +61,16 @@ const navItemsConfig: NavItem[] = [
 export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [openSubMenus, setOpenSubMenus] = React.useState<Record<string, boolean>>({});
+  const [openSubMenus, setOpenSubMenus] = React.useState<Record<string, boolean>>(() => {
+    // Initialize open states based on current path
+    const initialStates: Record<string, boolean> = {};
+    navItemsConfig.forEach(item => {
+      if (item.children && item.basePath && pathname.startsWith(item.basePath)) {
+        initialStates[item.label] = true;
+      }
+    });
+    return initialStates;
+  });
 
   const toggleSubMenu = (label: string) => {
     setOpenSubMenus(prev => ({ ...prev, [label]: !prev[label] }));
@@ -70,20 +88,18 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
         {navItemsConfig.map((item) => {
           if (item.children) {
             const isOpen = openSubMenus[item.label] || false;
-            // Parent is active if current path starts with the base path of its children (e.g., /tasks)
-            const baseChildPath = item.children[0].href.split('?')[0];
-            const isParentActive = pathname.startsWith(baseChildPath);
+            const isParentActive = item.basePath ? pathname.startsWith(item.basePath) : false;
 
             return (
               <React.Fragment key={item.label}>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    isActive={isParentActive}
+                    isActive={isParentActive && !item.children.some(c => c.href === pathname)} // Parent active if base path matches AND not a direct child link
                     tooltip={item.label}
                     onClick={() => toggleSubMenu(item.label)}
                     className={cn(
-                      isParentActive
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground' // Active parent style
+                      (isParentActive && !isOpen && !item.children.some(c => c.href === pathname && (!c.statusQuery && !searchParams.get('status') || c.statusQuery === searchParams.get('status'))))
+                        ? 'bg-primary/10 text-primary hover:bg-primary/20' // Style for active parent when closed and not a direct child match
                         : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground',
                       'justify-start'
                     )}
@@ -97,18 +113,17 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {isOpen && (
-                  <SidebarMenuSub> {/* SidebarMenuSub handles group-data-[collapsible=icon]:hidden */}
+                  <SidebarMenuSub> 
                     {item.children.map(child => {
                       let childIsActive = false;
                       if (child.statusQuery) {
                         childIsActive = pathname === child.href.split('?')[0] && searchParams.get('status') === child.statusQuery;
                       } else {
-                        // For "All Tasks" or items without specific query params
-                        childIsActive = pathname === child.href && !searchParams.get('status');
+                        childIsActive = pathname === child.href && (item.label !== 'Tasks' || !searchParams.get('status'));
                       }
 
                       return (
-                        <SidebarMenuSubItem key={child.href}>
+                        <SidebarMenuSubItem key={child.href + (child.statusQuery || '')}>
                           <SidebarMenuSubButton
                             asChild
                             isActive={childIsActive}
@@ -126,7 +141,6 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
               </React.Fragment>
             );
           } else {
-            // Regular item rendering (item.href will exist here)
             const isActive = pathname === item.href;
             return (
               <SidebarMenuItem key={item.href}>
