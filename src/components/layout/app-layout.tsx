@@ -1,13 +1,18 @@
 
+"use client"; // Required for usePathname
+
 import { MainHeader } from '@/components/layout/main-header';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarInset, SidebarRail } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
-
+import { usePathname } from 'next/navigation'; // Import usePathname
+import React from 'react'; // Import React for useEffect and useState if needed for more complex animations
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
   return (
     <SidebarProvider defaultOpen>
       <Sidebar collapsible="icon" variant="sidebar" className="bg-sidebar text-sidebar-foreground">
@@ -35,7 +40,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <MainHeader />
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 lg:gap-6 overflow-y-auto">
+        <main 
+          key={pathname} // Add key to trigger re-render/animation on route change
+          className="flex flex-1 flex-col gap-4 p-4 sm:p-6 lg:gap-6 overflow-y-auto page-fade-in"
+        >
           {children}
         </main>
       </SidebarInset>

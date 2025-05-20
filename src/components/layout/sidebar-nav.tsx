@@ -10,34 +10,34 @@ import {
   ListChecks,
   CalendarDays,
   Sparkles,
-  Activity, // Icon for Overview page (Upcoming View)
+  Activity,
   ChevronDown,
-  ListTodo, 
-  CheckCircle2, 
+  ListTodo,
+  CheckCircle2,
 } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar';
 import type { LucideIcon } from 'lucide-react';
 
 interface NavItemConfig {
-  href?: string; 
+  href?: string;
   label: string;
   icon: LucideIcon;
   children?: NavChildItemConfig[];
-  basePath?: string; // For parent active state if href is not direct
+  basePath?: string;
 }
 
 interface NavChildItemConfig {
   href: string;
   label: string;
-  icon?: LucideIcon; 
-  statusQuery?: string; 
+  icon?: LucideIcon;
+  statusQuery?: string;
 }
 
 const navItemsConfig: NavItemConfig[] = [
   {
     label: 'Dashboard',
     icon: LayoutDashboard,
-    basePath: '/', // To make parent active for both '/' and '/overview'
+    basePath: '/',
     children: [
       { href: '/', label: 'Main Dashboard', icon: LayoutDashboard },
       { href: '/overview', label: 'Upcoming View', icon: Activity },
@@ -61,19 +61,39 @@ const navItemsConfig: NavItemConfig[] = [
 export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const [openSubMenus, setOpenSubMenus] = React.useState<Record<string, boolean>>(() => {
-    // Initialize open states based on current path
     const initialStates: Record<string, boolean> = {};
+    let oneAlreadyOpen = false;
     navItemsConfig.forEach(item => {
-      if (item.children && item.basePath && pathname.startsWith(item.basePath)) {
-        initialStates[item.label] = true;
+      if (item.children) {
+        if (!oneAlreadyOpen && item.basePath && pathname.startsWith(item.basePath)) {
+          initialStates[item.label] = true;
+          oneAlreadyOpen = true;
+        } else {
+          initialStates[item.label] = false;
+        }
       }
     });
     return initialStates;
   });
 
   const toggleSubMenu = (label: string) => {
-    setOpenSubMenus(prev => ({ ...prev, [label]: !prev[label] }));
+    setOpenSubMenus(prevOpenSubMenus => {
+      const isCurrentlyOpen = !!prevOpenSubMenus[label];
+      const newStates: Record<string, boolean> = {};
+
+      navItemsConfig.forEach(configItem => {
+        if (configItem.children) {
+          if (configItem.label === label) {
+            newStates[configItem.label] = !isCurrentlyOpen;
+          } else {
+            newStates[configItem.label] = false; // Close other dropdowns
+          }
+        }
+      });
+      return newStates;
+    });
   };
 
   return (
@@ -94,12 +114,12 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
               <React.Fragment key={item.label}>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    isActive={isParentActive && !item.children.some(c => c.href === pathname)} // Parent active if base path matches AND not a direct child link
+                    isActive={isParentActive && !item.children.some(c => c.href === pathname && (!c.statusQuery || c.statusQuery === searchParams.get('status')))}
                     tooltip={item.label}
                     onClick={() => toggleSubMenu(item.label)}
                     className={cn(
                       (isParentActive && !isOpen && !item.children.some(c => c.href === pathname && (!c.statusQuery && !searchParams.get('status') || c.statusQuery === searchParams.get('status'))))
-                        ? 'bg-primary/10 text-primary hover:bg-primary/20' // Style for active parent when closed and not a direct child match
+                        ? 'bg-primary/10 text-primary hover:bg-primary/20'
                         : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground',
                       'justify-start'
                     )}
@@ -113,7 +133,7 @@ export function SidebarNav({ className, ...props }: React.HTMLAttributes<HTMLEle
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {isOpen && (
-                  <SidebarMenuSub> 
+                  <SidebarMenuSub>
                     {item.children.map(child => {
                       let childIsActive = false;
                       if (child.statusQuery) {
