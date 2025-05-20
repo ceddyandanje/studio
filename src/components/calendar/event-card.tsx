@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { CalendarEvent } from '@/types';

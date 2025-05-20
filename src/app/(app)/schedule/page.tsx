@@ -1,3 +1,4 @@
+
 import { AISchedulerForm } from '@/components/schedule/ai-scheduler-form';
 import { Sparkles } from 'lucide-react';
 

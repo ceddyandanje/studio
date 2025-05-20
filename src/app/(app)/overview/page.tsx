@@ -6,12 +6,11 @@ import type { Task } from '@/types';
 import { getMockTasks, deleteMockTask, toggleMockTaskComplete, subscribeToMockDataChanges } from '@/lib/mock-data';
 import { TaskCard } from '@/components/tasks/task-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, ListChecks } from 'lucide-react';
+import { Activity, ListChecks, PlusCircle } from 'lucide-react';
 import { format, addDays, isWithinInterval, startOfDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { QuickAddDialog } from '@/components/shared/quick-add-dialog';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
 
 export default function OverviewPage() {
   const [allTasks, setAllTasks] = useState<Task[]>(getMockTasks());
