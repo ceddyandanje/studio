@@ -15,8 +15,9 @@ export function MyWorkCard() {
       </CardHeader>
       <CardContent>
          <div className="text-center py-6 text-muted-foreground">
-          <p>No specific work items assigned.</p>
-          <p className="text-sm">Tasks you need to work on will appear here.</p>
+          <UserSquare2 className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+          <p className="font-medium">No specific work items assigned.</p>
+          <p className="text-sm">Tasks you need to work on, perhaps based on assignments or priority, will appear here.</p>
         </div>
         {/* Placeholder for tasks */}
       </CardContent>

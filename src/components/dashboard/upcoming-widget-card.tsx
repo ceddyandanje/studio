@@ -15,8 +15,9 @@ export function UpcomingWidgetCard() {
       </CardHeader>
       <CardContent>
         <div className="text-center py-6 text-muted-foreground">
-          <p>No upcoming items to display.</p>
-          <p className="text-sm">Key upcoming tasks and events will show here.</p>
+          <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+          <p className="font-medium">No upcoming items to display.</p>
+          <p className="text-sm">Key upcoming tasks and important events will be highlighted here to keep you prepared.</p>
         </div>
         {/* Placeholder for upcoming items */}
       </CardContent>

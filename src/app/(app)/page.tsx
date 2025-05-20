@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, LayoutDashboard, LayoutGrid } from 'lucide-react'; // Added LayoutDashboard, LayoutGrid
 import { RecentsCard } from '@/components/dashboard/recents-card';
 import { AgendaCard } from '@/components/dashboard/agenda-card';
 import { MyWorkCard } from '@/components/dashboard/my-work-card';
@@ -54,7 +54,10 @@ export default function DashboardPage() {
   return (
     <div className="flex-1 space-y-6">
       <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center">
+          <LayoutDashboard className="mr-3 h-8 w-8 text-primary" /> {/* Added icon to title */}
+          Dashboard
+        </h2>
         <div className="flex items-center gap-2" id="dashboard-search-container">
           <div className={cn("flex items-center transition-all duration-300 ease-in-out", searchVisible ? "w-64" : "w-0")}>
             {searchVisible && (
@@ -120,8 +123,9 @@ export default function DashboardPage() {
       </div>
        {(Object.values(cardsVisibility).every(v => !v)) && (
         <div className="text-center py-10 text-muted-foreground">
-            <p className="text-lg">Your dashboard is empty!</p>
-            <p>Use the "Manage Cards" button to add some widgets.</p>
+            <LayoutGrid className="mx-auto h-16 w-16 text-muted-foreground mb-4" /> {/* Added icon */}
+            <p className="text-lg font-semibold">Your Dashboard is Customizable!</p>
+            <p>Use the "Manage Cards" button above to select and display widgets that suit your workflow.</p>
         </div>
       )}
     </div>

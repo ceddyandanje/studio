@@ -110,15 +110,15 @@ export default function TasksPage() {
 
       {filteredTasks.length === 0 ? (
         <div className="text-center py-10">
-          <ListChecks className="mx-auto h-12 w-12 text-muted-foreground" />
+          <ListChecks className="mx-auto h-16 w-16 text-muted-foreground" /> {/* Increased icon size */}
           <p className="mt-4 text-lg text-muted-foreground">
-            {tasks.length === 0 ? "Your task list is empty." : "No tasks match your current filters."}
+            {tasks.length === 0 ? "Your task list is wonderfully empty!" : "No tasks match your current filters."}
           </p>
           {tasks.length === 0 && (
-            <p className="text-sm text-muted-foreground">Try adding a new task using the button above!</p>
+            <p className="text-sm text-muted-foreground">Ready to get started? Add a new task using the button above!</p>
           )}
           {tasks.length > 0 && (searchTerm !== '' || filterPriority !== 'all' || filterStatus !== 'all') && (
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria.</p>
+            <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria to find what you're looking for.</p>
           )}
         </div>
       ) : (

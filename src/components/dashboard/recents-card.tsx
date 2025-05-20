@@ -15,8 +15,9 @@ export function RecentsCard() {
       </CardHeader>
       <CardContent>
         <div className="text-center py-6 text-muted-foreground">
-          <p>No recent activity yet.</p>
-          <p className="text-sm">Your recent interactions will appear here.</p>
+          <Clock4 className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+          <p className="font-medium">No recent activity yet.</p>
+          <p className="text-sm">Your recent interactions with tasks, events, or documents will appear here for quick access.</p>
         </div>
       </CardContent>
     </Card>

@@ -83,12 +83,15 @@ export default function CalendarPage() {
           <CardContent>
             {eventsForSelectedDate.length === 0 ? (
               <div className="text-center py-10">
-                <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />
+                <CalendarDays className="mx-auto h-16 w-16 text-muted-foreground" /> {/* Increased icon size */}
                 <p className="mt-4 text-lg text-muted-foreground">
-                  {events.length === 0 && !selectedDate ? "Your calendar is empty." : "No events scheduled for this day."}
+                  {events.length === 0 && !selectedDate ? "Your calendar is looking a bit empty." : "No events scheduled for this day."}
                 </p>
                 {events.length === 0 && !selectedDate && (
-                   <p className="text-sm text-muted-foreground">Try adding a new event using the button above!</p>
+                   <p className="text-sm text-muted-foreground">Try adding a new event using the "Add New Event" button above to get started!</p>
+                )}
+                 {events.length > 0 && eventsForSelectedDate.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Select another date to see other events, or add a new one for today.</p>
                 )}
               </div>
             ) : (

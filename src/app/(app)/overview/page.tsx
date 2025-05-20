@@ -80,14 +80,14 @@ export default function OverviewPage() {
         <CardContent>
           {upcomingTasks.length === 0 ? (
             <div className="text-center py-10">
-              <ListChecks className="mx-auto h-12 w-12 text-muted-foreground" />
+              <ListChecks className="mx-auto h-16 w-16 text-muted-foreground" /> {/* Increased icon size */}
               <p className="mt-4 text-lg text-muted-foreground">
                 No tasks due in the next 7 days.
               </p>
               <p className="text-sm text-muted-foreground">
                 {allTasks.filter(t => !t.completed).length === 0 
                   ? "Your task list is empty. Add some tasks to get started!" 
-                  : "Enjoy the peace or plan ahead!"}
+                  : "Enjoy the peace or plan ahead! Add new tasks using the button above."}
               </p>
             </div>
           ) : (

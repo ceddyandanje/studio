@@ -15,8 +15,9 @@ export function AgendaCard() {
       </CardHeader>
       <CardContent>
         <div className="text-center py-6 text-muted-foreground">
-          <p>Nothing scheduled for today yet.</p>
-          <p className="text-sm">Today's events and due tasks will show here.</p>
+          <CalendarCheck2 className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+          <p className="font-medium">Nothing scheduled for today yet.</p>
+          <p className="text-sm">Events and tasks due today will automatically appear here to help you stay organized.</p>
         </div>
         {/* Placeholder for actual agenda items */}
       </CardContent>
