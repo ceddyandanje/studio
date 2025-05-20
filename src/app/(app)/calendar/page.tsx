@@ -60,9 +60,9 @@ export default function CalendarPage() {
         </QuickAddDialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1 shadow-md">
-          <CardContent className="p-0"> {/* Changed padding here */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1 shadow-md">
+          <CardContent className="p-0">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -74,7 +74,7 @@ export default function CalendarPage() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2 shadow-md">
+        <Card className="lg:col-span-2 shadow-md">
           <CardHeader>
             <CardTitle>
               Events for {selectedDate ? format(selectedDate, 'PPP') : 'selected date'}
@@ -83,7 +83,7 @@ export default function CalendarPage() {
           <CardContent>
             {eventsForSelectedDate.length === 0 ? (
               <div className="text-center py-10">
-                <CalendarDays className="mx-auto h-16 w-16 text-muted-foreground" /> {/* Increased icon size */}
+                <CalendarDays className="mx-auto h-16 w-16 text-muted-foreground" />
                 <p className="mt-4 text-lg text-muted-foreground">
                   {events.length === 0 && !selectedDate ? "Your calendar is looking a bit empty." : "No events scheduled for this day."}
                 </p>
