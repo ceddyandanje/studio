@@ -9,9 +9,9 @@ import Link from 'next/link';
 export function MainHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">
-      <SidebarTrigger className="md:hidden" /> {/* For mobile toggle & desktop collapse trigger if sidebar itself doesn't have one */}
+      <SidebarTrigger /> {/* Removed md:hidden to make it visible on desktop */}
       
-      {/* Mobile-only logo and title */}
+      {/* Mobile-only logo and title - this will now appear next to the trigger on mobile */}
       <div className="flex items-center gap-2 md:hidden">
          <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
            <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="text-primary h-7 w-7">
