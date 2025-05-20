@@ -1,34 +1,69 @@
 
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Search, SlidersHorizontal, X, LayoutDashboard, LayoutGrid } from 'lucide-react'; // Added LayoutDashboard, LayoutGrid
+import { Search, SlidersHorizontal, X, LayoutDashboard, LayoutGrid } from 'lucide-react';
 import { RecentsCard } from '@/components/dashboard/recents-card';
 import { AgendaCard } from '@/components/dashboard/agenda-card';
 import { MyWorkCard } from '@/components/dashboard/my-work-card';
 import { UpcomingWidgetCard } from '@/components/dashboard/upcoming-widget-card';
 import { cn } from '@/lib/utils';
+import type { Task, CalendarEvent } from '@/types';
+import { getMockTasks, getMockEvents, subscribeToMockDataChanges } from '@/lib/mock-data';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as ChartTooltip } from 'recharts';
+import { ChartTooltipContent } from '@/components/ui/chart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { format, subDays, startOfDay } from 'date-fns';
+import _ from 'lodash';
+
 
 interface DashboardCardsVisibility {
   showRecents: boolean;
   showAgenda: boolean;
   showMyWork: boolean;
   showUpcomingWidget: boolean;
+  showProductivityInsights: boolean;
 }
 
 export default function DashboardPage() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [cardsVisibility, setCardsVisibility] = useState<DashboardCardsVisibility>({
-    showRecents: true,
-    showAgenda: true,
-    showMyWork: true,
-    showUpcomingWidget: true,
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
+
+  const [cardsVisibility, setCardsVisibility] = useState<DashboardCardsVisibility>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboardCardsVisibility');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return {
+      showRecents: true,
+      showAgenda: true,
+      showMyWork: true,
+      showUpcomingWidget: true,
+      showProductivityInsights: true,
+    };
   });
+
+  useEffect(() => {
+    const handleDataChange = () => {
+      setAllTasks(getMockTasks());
+      setAllEvents(getMockEvents());
+    };
+    handleDataChange(); // Initial data load
+    const unsubscribe = subscribeToMockDataChanges(handleDataChange);
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('dashboardCardsVisibility', JSON.stringify(cardsVisibility));
+  }, [cardsVisibility]);
 
   const handleCardToggle = (cardKey: keyof DashboardCardsVisibility) => {
     setCardsVisibility(prev => ({ ...prev, [cardKey]: !prev[cardKey] }));
@@ -50,16 +85,39 @@ export default function DashboardPage() {
     };
   }, [searchVisible]);
 
+  const productivityData = useMemo(() => {
+    const taskCounts = _.countBy(allTasks, task => format(startOfDay(new Date(task.createdAt)), 'yyyy-MM-dd'));
+    const eventCounts = _.countBy(allEvents, event => format(startOfDay(new Date(event.startTime)), 'yyyy-MM-dd'));
+    
+    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+      const date = startOfDay(subDays(new Date(), i));
+      return format(date, 'yyyy-MM-dd');
+    }).reverse();
+
+    return last7Days.map(day => ({
+      date: format(new Date(day), 'MMM d'),
+      tasks: taskCounts[day] || 0,
+      events: eventCounts[day] || 0,
+      focusHours: (taskCounts[day] || 0) * 0.5 + (eventCounts[day] || 0) * 1, // Example calculation
+    }));
+  }, [allTasks, allEvents]);
+  
+  const chartConfig = {
+    tasks: { label: "Tasks Added", color: "hsl(var(--chart-1))" },
+    events: { label: "Events Scheduled", color: "hsl(var(--chart-2))" },
+    focusHours: { label: "Focus Hours", color: "hsl(var(--chart-3))" },
+  };
+
 
   return (
     <div className="flex-1 space-y-6">
       <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
         <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center">
-          <LayoutDashboard className="mr-3 h-8 w-8 text-primary" /> {/* Added icon to title */}
+          <LayoutDashboard className="mr-3 h-8 w-8 text-primary" />
           Dashboard
         </h2>
         <div className="flex items-center gap-2" id="dashboard-search-container">
-          <div className={cn("flex items-center transition-all duration-300 ease-in-out", searchVisible ? "w-64" : "w-0")}>
+          <div className={cn("flex items-center transition-all duration-300 ease-in-out", searchVisible ? "w-full max-w-xs sm:w-64" : "w-0")}>
             {searchVisible && (
               <Input
                 type="search"
@@ -93,6 +151,7 @@ export default function DashboardPage() {
                   { key: 'showAgenda', label: 'Agenda Card', description: 'Displays today\'s agenda.' },
                   { key: 'showMyWork', label: 'My Work Card', description: 'Highlights your tasks.' },
                   { key: 'showUpcomingWidget', label: 'Upcoming Widget', description: 'Quick look at what\'s next.' },
+                  { key: 'showProductivityInsights', label: 'Productivity Insights', description: 'Visualizes your activity.' },
                 ].map(item => (
                   <div key={item.key} className="flex items-center justify-between space-x-2 p-2 rounded-md border">
                     <Label htmlFor={item.key} className="flex flex-col space-y-1 cursor-pointer">
@@ -115,15 +174,50 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         {cardsVisibility.showRecents && <RecentsCard />}
         {cardsVisibility.showAgenda && <AgendaCard />}
         {cardsVisibility.showMyWork && <MyWorkCard />}
         {cardsVisibility.showUpcomingWidget && <UpcomingWidgetCard />}
+         {cardsVisibility.showProductivityInsights && (
+          <Card className="shadow-md lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Productivity Insights (Last 7 Days)</CardTitle>
+              <CardDescription>Tasks added, events scheduled, and estimated focus hours.</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2 pr-6 pb-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={productivityData}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    allowDecimals={false}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dot" />}
+                  />
+                  <Bar dataKey="tasks" fill="var(--color-tasks)" radius={4} />
+                  <Bar dataKey="events" fill="var(--color-events)" radius={4} />
+                  <Bar dataKey="focusHours" fill="var(--color-focusHours)" radius={4} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </div>
-       {(Object.values(cardsVisibility).every(v => !v)) && (
+
+      {(Object.values(cardsVisibility).every(v => !v)) && (
         <div className="text-center py-10 text-muted-foreground">
-            <LayoutGrid className="mx-auto h-16 w-16 text-muted-foreground mb-4" /> {/* Added icon */}
+            <LayoutGrid className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
             <p className="text-lg font-semibold">Your Dashboard is Customizable!</p>
             <p>Use the "Manage Cards" button above to select and display widgets that suit your workflow.</p>
         </div>
