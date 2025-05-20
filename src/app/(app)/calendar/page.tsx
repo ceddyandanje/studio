@@ -8,7 +8,7 @@ import { EventCard } from '@/components/calendar/event-card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, PlusCircle } from 'lucide-react';
 import { QuickAddDialog } from '@/components/shared/quick-add-dialog';
-import { Calendar } from '@/components/ui/calendar'; 
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +23,7 @@ export default function CalendarPage() {
     const unsubscribe = subscribeToMockDataChanges(() => {
       setEvents(getMockEvents());
     });
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, []);
 
   const handleDeleteEvent = (eventId: string) => {
@@ -35,11 +35,11 @@ export default function CalendarPage() {
       variant: "destructive"
     });
   };
-  
+
   const eventsForSelectedDate = useMemo(() => {
     return events
-      .filter(event => 
-        selectedDate && 
+      .filter(event =>
+        selectedDate &&
         format(new Date(event.startTime), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
       )
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
@@ -60,9 +60,9 @@ export default function CalendarPage() {
         </QuickAddDialog>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1 shadow-md">
-          <CardContent className="p-2 sm:p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="md:col-span-1 shadow-md">
+          <CardContent className="p-0"> {/* Changed padding here */}
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -74,7 +74,7 @@ export default function CalendarPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 shadow-md">
+        <Card className="md:col-span-2 shadow-md">
           <CardHeader>
             <CardTitle>
               Events for {selectedDate ? format(selectedDate, 'PPP') : 'selected date'}
@@ -97,9 +97,9 @@ export default function CalendarPage() {
             ) : (
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                 {eventsForSelectedDate.map(event => (
-                  <EventCard 
-                    key={event.id} 
-                    event={event} 
+                  <EventCard
+                    key={event.id}
+                    event={event}
                     onDelete={handleDeleteEvent}
                   />
                 ))}
