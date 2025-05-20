@@ -13,13 +13,15 @@ import { QuickAddDialog } from '@/components/shared/quick-add-dialog';
 import { Button } from '@/components/ui/button';
 
 export default function OverviewPage() {
-  const [allTasks, setAllTasks] = useState<Task[]>(getMockTasks());
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = subscribeToMockDataChanges(() => {
+    const handleDataChange = () => {
       setAllTasks(getMockTasks());
-    });
+    };
+    handleDataChange(); // Initial data load
+    const unsubscribe = subscribeToMockDataChanges(handleDataChange);
     return () => unsubscribe();
   }, []);
 

@@ -13,7 +13,7 @@ import { QuickAddDialog } from '@/components/shared/quick-add-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>(getMockTasks());
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all'); // 'all', 'pending', 'completed'
@@ -21,9 +21,11 @@ export default function TasksPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = subscribeToMockDataChanges(() => {
+    const handleDataChange = () => {
       setTasks(getMockTasks());
-    });
+    };
+    handleDataChange(); // Initial data load
+    const unsubscribe = subscribeToMockDataChanges(handleDataChange);
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 

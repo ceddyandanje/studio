@@ -14,15 +14,17 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CalendarPage() {
-  const [events, setEvents] = useState<CalendarEvent[]>(getMockEvents());
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = subscribeToMockDataChanges(() => {
+    const handleDataChange = () => {
       setEvents(getMockEvents());
-    });
+    };
+    handleDataChange(); // Initial data load
+    const unsubscribe = subscribeToMockDataChanges(handleDataChange);
     return () => unsubscribe();
   }, []);
 
